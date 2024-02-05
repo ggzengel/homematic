@@ -28,7 +28,7 @@ foreach(devID, devs.EnumUsedIDs()) {
     string funcName = "Func(" # (dom.GetObject(ch.ChnFunction())) # " #" # ch.ChnFunction() # ")";
     string intName  = "Interface(" # (dom.GetObject(ch.Interface())) # " #" # ch.Interface() # ")";
 
-    string d= "  " # " ><".Substr(ch.ChnDirection(),1);
+    string d= "  " # "=><".Substr(ch.ChnDirection(),1);
 
     log = log # "\n\t" # d # "\t" # chID # " \"" # ch.Name() # "\" => DPs(" # dps.Count() # ") " # " Dir(" # ch.ChnDirection() # ") AES(" # ch.ChnAESActive();
     log = log # ") Address(" # ch.Address() # ") GrpPartnerId(" # ch.ChnGroupPartnerId() # ") Archive(" # ch.ChnArchive() # ") " # intName # " " # roomName # " " # funcName;
@@ -56,3 +56,5 @@ log = log # "\n\n+++ END: " # currenttime;
 ! !! send as email
 ! dom.GetObject("EmailBody").State(log.ToUTF8());
 ! system.Exec("/etc/config/addons/email/email 12", &stdout, &stderr);
+
+WriteLine(log);
