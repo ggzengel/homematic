@@ -1,0 +1,58 @@
+!!  Copyright Grischa Zengel
+!! 
+!!    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+!!    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+!!
+!!    You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>. 
+
+string log = "\n+++ START: " # currenttime;
+
+var devs = dom.GetObject(ID_DEVICES);
+log = log # "\n\nDevices: #" # devs.Count();
+
+string devID;
+foreach(devID, devs.EnumUsedIDs()) {
+  var dev = dom.GetObject(devID);
+  var chs = dev.Channels();
+
+  string intName  = "Interface(" # (dom.GetObject(dev.Interface())) # " #" # dev.Interface() # ")";
+
+  log = log # "\n\t" # devID # " " # dev.HssType() # " \"" # dev.Name() # "\" => Channels (" # chs.Count() # ") " # intName # " Address(" # dev.Address() # ")";
+
+  string chID;
+  foreach(chID, chs) {
+    var ch = dom.GetObject(chID);
+    var dps = ch.DPs();
+
+    string roomName = "Room(" # (dom.GetObject(ch.ChnRoom())) # " #" # ch.ChnRoom() # ")";
+    string funcName = "Func(" # (dom.GetObject(ch.ChnFunction())) # " #" # ch.ChnFunction() # ")";
+    string intName  = "Interface(" # (dom.GetObject(ch.Interface())) # " #" # ch.Interface() # ")";
+
+    string d= "  " # " ><".Substr(ch.ChnDirection(),1);
+
+    log = log # "\n\t" # d # "\t" # chID # " \"" # ch.Name() # "\" => DPs(" # dps.Count() # ") " # " Dir(" # ch.ChnDirection() # ") AES(" # ch.ChnAESActive();
+    log = log # ") Address(" # ch.Address() # ") GrpPartnerId(" # ch.ChnGroupPartnerId() # ") Archive(" # ch.ChnArchive() # ") " # intName # " " # roomName # " " # funcName;
+
+    string dpID;
+    foreach(dpID, dps) {
+      var dp = dom.GetObject(dpID);
+
+      string dpName = dp.Name().Replace((dom.GetObject(ch.Interface())) # "." # ch.Address() # ".","");
+
+      string s="";
+      if (dp.Value() != dp.LastValue()) {
+        s = " +";
+        if (dp.Value().Type() != dp.LastValue().Type()) {
+          s = s # dp.LastValue().Type().Substr(0,1);
+        }
+      }
+      log = log # "\n\t\t" # s # "\t" # dp.Timestamp() # " " # dpID # " \"" # dpName # "\" Value(" # dp.Value() # ") Last(" # dp.LastValue() # ") OP(" # dp.Operations() # ") ValueType(" # dp.ValueType() # ")";
+    }  
+  }
+}
+
+log = log # "\n\n+++ END: " # currenttime;
+
+! !! send as email
+! dom.GetObject("EmailBody").State(log.ToUTF8());
+! system.Exec("/etc/config/addons/email/email 12", &stdout, &stderr);
